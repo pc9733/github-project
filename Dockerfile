@@ -1,4 +1,10 @@
-FROM openjdk:8-jdk-alpine
-WORKDIR /opt/app
-COPY target/wezvatech-demo-9739110917.jar app.jar
-ENTRYPOINT ["java","-jar","app.jar"]
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+COPY app/package*.json ./
+COPY app/app.js ./
+
+EXPOSE 80
+
+CMD ["node", "app.js"]

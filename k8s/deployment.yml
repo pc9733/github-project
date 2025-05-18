@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
         - name: app
-          image: <ECR_REPO_URI>:latest
+          image: 842675998931.dkr.ecr.us-east-1.amazonaws.com/sample-app-repo
           ports:
             - containerPort: 80
