@@ -1,0 +1,5 @@
+mapUsers: |
+  - userarn: arn:aws:iam::842675998931:user/github-actions-user
+    username: github-actions
+    groups:
+      - system:masters
