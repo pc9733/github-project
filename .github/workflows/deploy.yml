@@ -1,7 +1,5 @@
 name: Deploy to Amazon EKS
 
-name: Deploy to Amazon EKS
-
 on:
   workflow_dispatch:
 
