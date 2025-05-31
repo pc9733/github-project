@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
+      CLUSTER_NAME: my-cluster-name
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
@@ -23,7 +23,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Login to Amazon ECR
         run: |
@@ -38,22 +38,22 @@ jobs:
           docker push $IMAGE_URI
 
       - name: Update kubeconfig for EKS
-        run: |
-          mkdir -p $HOME/.kube
-          aws eks update-kubeconfig \
-            --name "$CLUSTER_NAME" \
-            --region "$AWS_REGION" \
-            --kubeconfig $HOME/.kube/config
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          CLUSTER_NAME: ${{ vars.CLUSTER_NAME }}
-
+          CLUSTER_NAME: ${{ env.CLUSTER_NAME }}
+        run: |
+          aws eks update-kubeconfig \
+            --region "$AWS_REGION" \
+            --name "$CLUSTER_NAME"
+        # Exporting KUBECONFIG to $GITHUB_ENV ensures that subsequent steps in the workflow can access the Kubernetes configuration.
+        # Removed printing kubeconfig to avoid exposing sensitive information
+        echo "export KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
       - name: Deploy to Amazon EKS
+        env:
+          KUBECONFIG: $HOME/.kube/config
         run: |
           kubectl apply -f k8s/deployment.yml --validate=false
           kubectl apply -f k8s/service.yml
-        env:
-          KUBECONFIG: $HOME/.kube/config
 
