@@ -47,12 +47,9 @@ jobs:
           aws eks update-kubeconfig \
             --region "$AWS_REGION" \
             --name "$CLUSTER_NAME"
-        # Exporting KUBECONFIG to $GITHUB_ENV ensures that subsequent steps in the workflow can access the Kubernetes configuration.
-        # Removed printing kubeconfig to avoid exposing sensitive information
-        echo "export KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+          echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+
       - name: Deploy to Amazon EKS
-        env:
-          KUBECONFIG: $HOME/.kube/config
         run: |
           kubectl apply -f k8s/deployment.yml --validate=false
           kubectl apply -f k8s/service.yml
