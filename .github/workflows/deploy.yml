@@ -13,6 +13,9 @@ jobs:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
       ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
       IMAGE_TAG: latest
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
       - name: Checkout code
@@ -38,19 +41,21 @@ jobs:
           docker push $IMAGE_URI
 
       - name: Update kubeconfig for EKS
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          CLUSTER_NAME: ${{ env.CLUSTER_NAME }}
         run: |
+          mkdir -p $HOME/.kube
           aws eks update-kubeconfig \
             --region "$AWS_REGION" \
-            --name "$CLUSTER_NAME"
+            --name "$CLUSTER_NAME" \
+            --kubeconfig $HOME/.kube/config
           echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+
+      - name: Verify EKS Cluster Access
+        run: |
+          aws sts get-caller-identity
+          kubectl version --short
+          kubectl get nodes
 
       - name: Deploy to Amazon EKS
         run: |
           kubectl apply -f k8s/deployment.yml --validate=false
           kubectl apply -f k8s/service.yml
-
