@@ -3,9 +3,7 @@ name: Deploy to Amazon EKS
 name: Deploy to Amazon EKS
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   deploy:
