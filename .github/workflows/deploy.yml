@@ -1,7 +1,12 @@
 name: Deploy to Amazon EKS
 
 on:
+  push:
+    branches:
+      - master
   workflow_dispatch:
+    branches:
+      - master
 
 jobs:
   deploy:
